@@ -1,0 +1,10 @@
+[package]
+name = "assignment_3"
+version = "0.1.0"
+authors = ["Chris Ward <acward96@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+itertools = "0.8.0"
+rayon = "1.0.3"
+rand = "0.6.5"
