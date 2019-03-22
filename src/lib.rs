@@ -1,8 +1,8 @@
 extern crate itertools;
-extern crate rayon;
+// extern crate rayon;
 
 use itertools::Itertools;
-use rayon::prelude::*;
+// use rayon::prelude::*;
 
 use std::collections::HashMap;
 
@@ -58,7 +58,7 @@ pub fn travel(w_array: DistanceMatrix) -> Vec<usize> {
         let comb_by_len = (1..w_array.size).combinations(set_len).collect_vec();
         //        println!("{:?}", comb_by_len);
         // iterate through all combinations of a given length
-        comb_by_len.par_iter().for_each(|comb| {
+        comb_by_len.iter().for_each(|comb| {
             let mut dist: Vec<(usize, Option<u32>)> = vec![(0, None); w_array.size];
             // for each possible value
             (1..w_array.size)
@@ -73,7 +73,7 @@ pub fn travel(w_array: DistanceMatrix) -> Vec<usize> {
                             let d_col: Vec<usize> =
                                 comb.iter().filter(|x| *x != k).cloned().collect();
                             // gets the value of D[Vx][A - Vx]
-                            let d_val: Option<u32> = dist_map.get(&d_col).unwrap()[*k].1;
+                            let d_val: Option<u32> = dist_map[&d_col][*k].1;
                             // add the two together
                             let val: Option<u32> = match (w, d_val) {
                                 (Some(x), Some(y)) => Some(x + y), // if both are not infinity, add them
@@ -102,7 +102,7 @@ pub fn travel(w_array: DistanceMatrix) -> Vec<usize> {
             // gets the correct column for A - Vx
             let d_col: Vec<usize> = comb.iter().filter(|x| *x != k).cloned().collect();
             // gets the value of D[Vx][A - Vx]
-            let d_val: Option<u32> = dist_map.get(&d_col).unwrap()[*k].1;
+            let d_val: Option<u32> = dist_map[&d_col][*k].1;
             // add the two together
             let val: Option<u32> = match (w, d_val) {
                 (Some(x), Some(y)) => Some(x + y), // if both are not infinity, add them
@@ -122,8 +122,8 @@ pub fn travel(w_array: DistanceMatrix) -> Vec<usize> {
     let mut next: usize = last_val.0;
     trip.push(next);
     comb = comb.iter().filter(|i| **i != next).cloned().collect();
-    while comb.len() > 0 {
-        next = dist_map.get(&comb).unwrap()[next].0;
+    while !comb.is_empty() {
+        next = dist_map[&comb][next].0;
         trip.push(next);
         comb = comb.iter().filter(|i| **i != next).cloned().collect();
     }
@@ -143,7 +143,12 @@ mod tests {
 
     #[test]
     fn four_d() {
-        let distances: Vec<u32> = vec![0, 2, 9, 0, 1, 0, 6, 4, 0, 7, 0, 8, 6, 3, 0, 0];
+        let distances: Vec<u32> = vec![
+            0, 2, 9, 0, 
+            1, 0, 6, 4, 
+            0, 7, 0, 8, 
+            6, 3, 0, 0
+        ];
         let w: DistanceMatrix = DistanceMatrix::new(4, distances);
         let result = travel(w);
         assert_eq!(result, vec![0, 2, 3, 1, 0]);
@@ -152,10 +157,32 @@ mod tests {
     #[test]
     fn five_d() {
         let distances: Vec<u32> = vec![
-            0, 1, 0, 1, 5, 9, 0, 3, 2, 0, 0, 0, 0, 4, 0, 0, 0, 2, 0, 3, 3, 0, 0, 0, 0,
+            0, 1, 0, 1, 5, 
+            9, 0, 3, 2, 0, 
+            0, 0, 0, 4, 0, 
+            0, 0, 2, 0, 3, 
+            3, 0, 0, 0, 0,
         ];
         let w: DistanceMatrix = DistanceMatrix::new(5, distances);
         let result = travel(w);
         assert_eq!(result, vec![0, 1, 2, 3, 4, 0]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn invalid_distance_matrix_1() {
+        let d: Vec<u32> = vec![0, 1];
+        let _w: DistanceMatrix = DistanceMatrix::new(2, d);
+    }
+
+    #[test]
+    #[should_panic]
+    fn invalid_distance_get() {
+        let d: Vec<u32> = vec![
+            0, 1,
+            2, 0
+        ];
+        let w: DistanceMatrix = DistanceMatrix::new(2, d);
+        let _x = w.get(2, 0);
     }
 }
