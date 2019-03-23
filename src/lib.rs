@@ -84,7 +84,7 @@ pub fn travel(w_array: DistanceMatrix) -> (u32, Vec<usize>) {
                 .filter(|i| !comb.contains(i))
                 .for_each(|i| {
                     // TODO: take the min from here
-                    let vals: Vec<(usize, Option<u32>)> = comb
+                    let min_val:  Option<(usize, Option<u32>)> = comb
                         .iter()
                         .map(|k| {
                             let w = w_array.get(i, *k);
@@ -100,13 +100,12 @@ pub fn travel(w_array: DistanceMatrix) -> (u32, Vec<usize>) {
                             };
                             (*k, val)
                         })
-                        .collect();
+                        .filter(|i| i.1.is_some())
+                        .min_by_key(|i| i.1);
                     // Find the minimum value that is not None
-                    let min_val: Option<&(usize, Option<u32>)> =
-                        vals.iter().filter(|i| i.1.is_some()).min_by_key(|i| i.1);
                     dist[i] = match min_val {
                         None => (0, None),
-                        Some(x) => *x,
+                        Some(x) => x,
                     };
                 });
             // println!("{:?}, {:?}", comb, dist);
@@ -118,7 +117,7 @@ pub fn travel(w_array: DistanceMatrix) -> (u32, Vec<usize>) {
         });
     }
     let mut comb: Vec<usize> = (1..w_array.size).collect();
-    let vals: Vec<(usize, Option<u32>)> = comb
+    let last_val: (usize, Option<u32>) = comb
         .iter()
         .map(|k| {
             let w = w_array.get(0, *k);
@@ -133,9 +132,6 @@ pub fn travel(w_array: DistanceMatrix) -> (u32, Vec<usize>) {
             };
             (*k, val)
         })
-        .collect();
-    let last_val: (usize, Option<u32>) = *vals
-        .iter()
         .filter(|i| i.1.is_some())
         .min_by_key(|i| i.1)
         .unwrap();
@@ -209,7 +205,7 @@ pub fn par_travel(w_array: DistanceMatrix) -> (u32, Vec<usize>) {
                 // filter out all values if it's contained in the the combination
                 .filter(|i| !comb.contains(i))
                 .for_each(|i| {
-                    let vals: Vec<(usize, Option<u32>)> = comb
+                     let min_val:  Option<(usize, Option<u32>)> = comb
                         .iter()
                         .map(|k| {
                             let w = w_array.get(i, *k);
@@ -225,17 +221,14 @@ pub fn par_travel(w_array: DistanceMatrix) -> (u32, Vec<usize>) {
                             };
                             (*k, val)
                         })
-                        .collect();
-                    // Find the minimum value that is not None
-                    let min_val: Option<&(usize, Option<u32>)> =
-                        vals.iter().filter(|i| i.1.is_some()).min_by_key(|i| i.1);
+                        .filter(|i| i.1.is_some())
+                        .min_by_key(|i| i.1);
                     dist[i] = match min_val {
                         None => (0, None),
-                        Some(x) => *x,
+                        Some(x) => x,
                     };
                 });
-            // println!("{:?}, {:?}", comb, dist);
-            // dist_map.insert(comb.clone(), dist);
+
             (comb.clone(), dist)
         }).collect();
         new_cols.iter().for_each(|i| {
@@ -243,7 +236,7 @@ pub fn par_travel(w_array: DistanceMatrix) -> (u32, Vec<usize>) {
         });
     }
     let mut comb: Vec<usize> = (1..w_array.size).collect();
-    let vals: Vec<(usize, Option<u32>)> = comb
+    let last_val: (usize, Option<u32>) = comb
         .iter()
         .map(|k| {
             let w = w_array.get(0, *k);
@@ -258,9 +251,6 @@ pub fn par_travel(w_array: DistanceMatrix) -> (u32, Vec<usize>) {
             };
             (*k, val)
         })
-        .collect();
-    let last_val: (usize, Option<u32>) = *vals
-        .iter()
         .filter(|i| i.1.is_some())
         .min_by_key(|i| i.1)
         .unwrap();
