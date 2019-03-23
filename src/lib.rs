@@ -1,12 +1,12 @@
 extern crate itertools;
-// extern crate rayon;
+extern crate rayon;
 
 use itertools::Itertools;
-// use rayon::prelude::*;
+use rayon::prelude::*;
 
 use std::collections::HashMap;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DistanceMatrix {
     pub size: usize,
     pub array: Vec<Option<u32>>,
@@ -49,7 +49,7 @@ pub fn travel(w_array: DistanceMatrix) -> Vec<usize> {
     let void_col: Vec<(usize, Option<u32>)> = (0..w_array.size)
         .map(|i: usize| (0, w_array.get(i, 0)))
         .collect();
-    println!("[], {:?}", void_col);
+    // println!("[], {:?}", void_col);
     // add empty set column to distance map
     dist_map.insert(Vec::new(), void_col);
     // for each combination size
@@ -58,7 +58,9 @@ pub fn travel(w_array: DistanceMatrix) -> Vec<usize> {
         let comb_by_len = (1..w_array.size).combinations(set_len).collect_vec();
         //        println!("{:?}", comb_by_len);
         // iterate through all combinations of a given length
-        comb_by_len.iter().for_each(|comb| {
+        let new_cols: Vec<(Vec<usize>, Vec<(usize, Option<u32>)>)> = comb_by_len
+            .iter()
+            .map(|comb| {
             let mut dist: Vec<(usize, Option<u32>)> = vec![(0, None); w_array.size];
             // for each possible value
             (1..w_array.size)
@@ -90,8 +92,12 @@ pub fn travel(w_array: DistanceMatrix) -> Vec<usize> {
                         Some(x) => *x,
                     };
                 });
-            println!("{:?}, {:?}", comb, dist);
-            dist_map.insert(comb.clone(), dist);
+            // println!("{:?}, {:?}", comb, dist);
+            // dist_map.insert(comb.clone(), dist);
+            (comb.clone(), dist)
+        }).collect();
+        new_cols.iter().for_each(|i| {
+            dist_map.insert(i.0.clone(), i.1.clone());
         });
     }
     let mut comb: Vec<usize> = (1..w_array.size).collect();
@@ -128,10 +134,109 @@ pub fn travel(w_array: DistanceMatrix) -> Vec<usize> {
         comb = comb.iter().filter(|i| **i != next).cloned().collect();
     }
     trip.push(0);
-    let last_comb: Vec<usize> = (1..w_array.size).collect();
-    println!("{:?}: [({}, {:?})]", last_comb, last_val.0, last_val.1);
-    println!("Trip: {:?}", trip);
-    println!("Distance: {}", last_val.1.unwrap());
+    // let last_comb: Vec<usize> = (1..w_array.size).collect();
+    // println!("{:?}: [({}, {:?})]", last_comb, last_val.0, last_val.1);
+    // println!("Trip: {:?}", trip);
+    // println!("Distance: {}", last_val.1.unwrap());
+    trip
+}
+
+pub fn par_travel(w_array: DistanceMatrix) -> Vec<usize> {
+    // create the hash map
+    let mut dist_map: HashMap<Vec<usize>, Vec<(usize, Option<u32>)>> = HashMap::new();
+    //   calculate the void column
+    let void_col: Vec<(usize, Option<u32>)> = (0..w_array.size)
+        .map(|i: usize| (0, w_array.get(i, 0)))
+        .collect();
+    // println!("[], {:?}", void_col);
+    // add empty set column to distance map
+    dist_map.insert(Vec::new(), void_col);
+    // for each combination size
+    for set_len in 1..(w_array.size - 1) {
+        // combinations of length set_len
+        let comb_by_len = (1..w_array.size).combinations(set_len).collect_vec();
+        //        println!("{:?}", comb_by_len);
+        // iterate through all combinations of a given length
+        let new_cols: Vec<(Vec<usize>, Vec<(usize, Option<u32>)>)> = comb_by_len
+            .par_iter()
+            .map(|comb| {
+            let mut dist: Vec<(usize, Option<u32>)> = vec![(0, None); w_array.size];
+            // for each possible value
+            (1..w_array.size)
+                // filter out all values if it's contained in the the combination
+                .filter(|i| !comb.contains(i))
+                .for_each(|i| {
+                    let vals: Vec<(usize, Option<u32>)> = comb
+                        .iter()
+                        .map(|k| {
+                            let w = w_array.get(i, *k);
+                            // gets the correct column for A - Vx
+                            let d_col: Vec<usize> =
+                                comb.iter().filter(|x| *x != k).cloned().collect();
+                            // gets the value of D[Vx][A - Vx]
+                            let d_val: Option<u32> = dist_map[&d_col][*k].1;
+                            // add the two together
+                            let val: Option<u32> = match (w, d_val) {
+                                (Some(x), Some(y)) => Some(x + y), // if both are not infinity, add them
+                                (_, _) => None, // else (at least one is infinity, retrn none
+                            };
+                            (*k, val)
+                        })
+                        .collect();
+                    // Find the minimum value that is not None
+                    let min_val: Option<&(usize, Option<u32>)> =
+                        vals.iter().filter(|i| i.1.is_some()).min_by_key(|i| i.1);
+                    dist[i] = match min_val {
+                        None => (0, None),
+                        Some(x) => *x,
+                    };
+                });
+            // println!("{:?}, {:?}", comb, dist);
+            // dist_map.insert(comb.clone(), dist);
+            (comb.clone(), dist)
+        }).collect();
+        new_cols.iter().for_each(|i| {
+            dist_map.insert(i.0.clone(), i.1.clone());
+        });
+    }
+    let mut comb: Vec<usize> = (1..w_array.size).collect();
+    let vals: Vec<(usize, Option<u32>)> = comb
+        .iter()
+        .map(|k| {
+            let w = w_array.get(0, *k);
+            // gets the correct column for A - Vx
+            let d_col: Vec<usize> = comb.iter().filter(|x| *x != k).cloned().collect();
+            // gets the value of D[Vx][A - Vx]
+            let d_val: Option<u32> = dist_map[&d_col][*k].1;
+            // add the two together
+            let val: Option<u32> = match (w, d_val) {
+                (Some(x), Some(y)) => Some(x + y), // if both are not infinity, add them
+                (_, _) => None,                    // else (at least one is infinity, retrn none
+            };
+            (*k, val)
+        })
+        .collect();
+    let last_val: (usize, Option<u32>) = *vals
+        .iter()
+        .filter(|i| i.1.is_some())
+        .min_by_key(|i| i.1)
+        .unwrap();
+    let mut trip: Vec<usize> = vec![0];
+    // calculate minimum trip
+    // set next city
+    let mut next: usize = last_val.0;
+    trip.push(next);
+    comb = comb.iter().filter(|i| **i != next).cloned().collect();
+    while !comb.is_empty() {
+        next = dist_map[&comb][next].0;
+        trip.push(next);
+        comb = comb.iter().filter(|i| **i != next).cloned().collect();
+    }
+    trip.push(0);
+    // let last_comb: Vec<usize> = (1..w_array.size).collect();
+    // println!("{:?}: [({}, {:?})]", last_comb, last_val.0, last_val.1);
+    // println!("Trip: {:?}", trip);
+    // println!("Distance: {}", last_val.1.unwrap());
     trip
 }
 
