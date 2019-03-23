@@ -13,9 +13,7 @@ fn main() {
     lib::travel(w2);
     let n: usize = 20;
     let mut rng = rand::thread_rng();
-    let distances3: Vec<u32> = (0..(n * n)).map(|_| {
-        rng.gen_range(0, 18)
-    }).collect();
+    let distances3: Vec<u32> = (0..(n * n)).map(|_| rng.gen_range(0, 18)).collect();
     let w3: lib::DistanceMatrix = lib::DistanceMatrix::new(n, distances3);
     let mut now = Instant::now();
     lib::travel(w3.clone());
@@ -23,5 +21,4 @@ fn main() {
     now = Instant::now();
     lib::par_travel(w3);
     println!("Parallel {}: {}ms", n, now.elapsed().as_millis());
-
 }
