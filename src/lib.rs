@@ -308,7 +308,7 @@ mod tests {
         assert_eq!(result.1, vec![0, 1, 2, 3, 4, 0]);
     }
 
-        #[test]
+    #[test]
     fn par_four_d() {
         let distances: Vec<u32> = vec![
             0, 2, 9, 0, 
