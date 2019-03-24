@@ -1,5 +1,5 @@
 [package]
-name = "assignment_3"
+name = "held_karp_rust"
 version = "0.1.0"
 authors = ["Chris Ward <acward96@gmail.com>"]
 edition = "2018"

@@ -53,8 +53,8 @@ impl DistanceMatrix {
 ///     15, 7, 0, 8,
 ///     6, 3, 12, 0
 /// ];
-/// let dist_matrix = assignment_3::DistanceMatrix::new(4, distances);
-/// let result = assignment_3::travel(dist_matrix);
+/// let dist_matrix = held_karp_rust::DistanceMatrix::new(4, distances);
+/// let result = held_karp_rust::travel(dist_matrix);
 /// assert_eq!(result.0, 21);
 /// assert_eq!(result.1, vec![0, 2, 3, 1, 0]);
 /// ```
@@ -174,8 +174,8 @@ pub fn travel(w_array: DistanceMatrix) -> (u32, Vec<usize>) {
 ///     15, 7, 0, 8,
 ///     6, 3, 12, 0
 /// ];
-/// let dist_matrix = assignment_3::DistanceMatrix::new(4, distances);
-/// let result = assignment_3::par_travel(dist_matrix);
+/// let dist_matrix = held_karp_rust::DistanceMatrix::new(4, distances);
+/// let result = held_karp_rust::par_travel(dist_matrix);
 /// assert_eq!(result.0, 21);
 /// assert_eq!(result.1, vec![0, 2, 3, 1, 0]);
 /// ```
