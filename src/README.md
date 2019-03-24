@@ -1,4 +1,3 @@
-## Chris Ward Assignment 1
+## Parallel Held-Karp
 
-To run the program, install rust (https://rustup.rs/).
-While in the programs folder, run `cargo run`.
+This crate holds an implementation of the Held-Karp TSP solver written in rust. The rayon crate was used to provide some parallelism.
