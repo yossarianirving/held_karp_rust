@@ -8,3 +8,4 @@ edition = "2018"
 itertools = "0.8.0"
 rayon = "*"
 rand = "*"
+hashbrown = { version = "0.1.8", features = ["rayon"] }

@@ -1,10 +1,11 @@
 extern crate itertools;
 extern crate rayon;
+extern crate hashbrown;
 
 use itertools::Itertools;
 use rayon::prelude::*;
 
-use std::collections::HashMap;
+use hashbrown::HashMap;
 
 #[derive(Debug, Clone)]
 pub struct DistanceMatrix {
@@ -104,7 +105,7 @@ pub fn travel(w_array: DistanceMatrix) -> (u32, Vec<usize>) {
                             // add the two together
                             let val: Option<u32> = match (w, d_val) {
                                 (Some(x), Some(y)) => Some(x + y), // if both are not infinity, add them
-                                (_, _) => None, // else (at least one is infinity, retrn none
+                                _ => None, // else (at least one is infinity, retrn none
                             };
                             (*k, val)
                         })
@@ -134,7 +135,7 @@ pub fn travel(w_array: DistanceMatrix) -> (u32, Vec<usize>) {
             // add the two together
             let val: Option<u32> = match (w, d_val) {
                 (Some(x), Some(y)) => Some(x + y), // if both are not infinity, add them
-                (_, _) => None,                    // else (at least one is infinity, retrn none
+                _ => None,                    // else (at least one is infinity, retrn none
             };
             (*k, val)
         })
@@ -151,7 +152,6 @@ pub fn travel(w_array: DistanceMatrix) -> (u32, Vec<usize>) {
     while comb_num > 0 {
         next = dist_map[&comb_num][next].0;
         trip.push(next);
-        comb = comb.iter().filter(|i| **i != next).cloned().collect();
         comb_num = comb_num ^ (1 << next);
     }
     trip.push(0);
@@ -276,7 +276,6 @@ pub fn par_travel(w_array: DistanceMatrix) -> (u32, Vec<usize>) {
     while comb_num > 0 {
         next = dist_map[&comb_num][next].0;
         trip.push(next);
-        comb = comb.iter().filter(|i| **i != next).cloned().collect();
         comb_num = comb_num ^ (1 << next);
     }
     trip.push(0);
