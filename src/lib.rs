@@ -82,9 +82,9 @@ pub fn travel(w_array: DistanceMatrix) -> (u32, Vec<usize>) {
         let comb_by_len = (1..w_array.size).combinations(set_len).collect_vec();
         //        println!("{:?}", comb_by_len);
         // iterate through all combinations of a given length
-        let new_cols: Vec<(usize, Vec<(usize, Option<u32>)>)> = comb_by_len
+        comb_by_len
             .iter()
-            .map(|comb| {
+            .for_each(|comb| {
             let comb_num = set_to_num(comb);
             let mut dist: Vec<(usize, Option<u32>)> = vec![(0, None); w_array.size];
             // for each possible value
@@ -118,10 +118,7 @@ pub fn travel(w_array: DistanceMatrix) -> (u32, Vec<usize>) {
                 });
             // println!("{:?}, {:?}", comb, dist);
             // dist_map.insert(comb.clone(), dist);
-            (comb_num, dist)
-        }).collect();
-        new_cols.iter().for_each(|i| {
-            dist_map.insert(i.0.clone(), i.1.clone());
+            dist_map.insert(comb_num, dist);
         });
     }
     let mut comb: Vec<usize> = (1..w_array.size).collect();
