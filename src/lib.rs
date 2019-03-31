@@ -1,8 +1,10 @@
 extern crate itertools;
+extern crate hashbrown;
+
 
 use itertools::Itertools;
 
-use std::collections::HashMap;
+use hashbrown::HashMap;
 
 #[derive(Debug, Clone)]
 pub struct DistanceMatrix {
